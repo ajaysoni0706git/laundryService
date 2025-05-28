@@ -1,7 +1,7 @@
 package com.laundry.service.model;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,8 +16,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
-
-import com.laundry.service.model.Address;
 
 @Entity
 @Data
@@ -53,7 +51,10 @@ public class User {
 	private LocalDateTime disabled_date;
 	
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Address> address;
+	private List<Address> address = new ArrayList<>();
+	
+	@Column(name = "profile_image_path")
+	private String profileImagePath;
 
 	public Long getId() {
 		return id;
@@ -151,14 +152,6 @@ public class User {
 		this.is_disabled = is_disabled;
 	}
 
-	public List<Address> getAddress() {
-		return address;
-	}
-
-	public void setAddress(List<Address> address) {
-		this.address = address;
-	}
-
 	public LocalDateTime getLogin_time() {
 		return login_time;
 	}
@@ -181,6 +174,26 @@ public class User {
 
 	public void setDisabled_date(LocalDateTime disabled_date) {
 		this.disabled_date = disabled_date;
+	}
+
+	public List<Address> getAddress() {
+		return address;
+	}
+
+	public void setAddresses(List<Address> address) {
+		this.address = address;
+	}
+
+	public String getProfileImagePath() {
+		return profileImagePath;
+	}
+
+	public void setProfileImagePath(String profileImagePath) {
+		this.profileImagePath = profileImagePath;
+	}
+
+	public void setAddress(List<Address> address) {
+		this.address = address;
 	}
 
 	

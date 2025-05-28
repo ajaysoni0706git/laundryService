@@ -5,17 +5,22 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.laundry.service.config.JwtUtil;
 import com.laundry.service.dto.AuthRequest;
+import com.laundry.service.dto.ImageUploadDTO;
 import com.laundry.service.model.User;
 import com.laundry.service.service.IUserService;
 
@@ -62,4 +67,33 @@ public class HomeController {
 
 		return ResponseEntity.ok(response);
 	}
+	
+	@PostMapping("/upload_userImage")
+	public ResponseEntity<?> uploadRegImage(@RequestParam("image") MultipartFile file, @RequestHeader("Authorization") String authHeader) {
+		
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+		}
+
+		String token = authHeader.substring(7); //Remove the Bearer
+		if (!jwtUtil.isTokenValid(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+		}
+
+		//String email = jwtUtil.extractEmail(token);
+		String userId = jwtUtil.extractClaim(token, "user_id");
+		
+		int user_id = Integer.parseInt(userId);
+		String path = userService.uploadProfileImage(user_id, file);
+		
+		if (path == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Image upload failed");
+		}
+		
+		// Return the path in a DTO
+		ImageUploadDTO dto = new ImageUploadDTO();
+		dto.setPath(path);
+		return ResponseEntity.ok(dto);
+	}
+	
 }

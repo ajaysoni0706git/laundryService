@@ -1,5 +1,7 @@
 package com.laundry.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,12 +36,14 @@ public class Address {
     private Double longitude;
 
     @Column(name = "is_default")
-    private Boolean isDefault = false;
+    private Boolean is_default;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
+    
 	public Long getAddress_id() {
 		return address_id;
 	}
@@ -104,12 +108,12 @@ public class Address {
 		this.longitude = longitude;
 	}
 
-	public Boolean getIsDefault() {
-		return isDefault;
+	public Boolean getIs_default() {
+		return is_default;
 	}
 
-	public void setIsDefault(Boolean isDefault) {
-		this.isDefault = isDefault;
+	public void setIs_default(Boolean is_default) {
+		this.is_default = is_default;
 	}
 
 	public User getUser() {

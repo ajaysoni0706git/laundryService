@@ -19,3 +19,7 @@ spring:
       hibernate:
         format_sql: true
 #        default_schema: laundry
+
+user:
+  image:
+    upload-dir: src/main/resources/uploads/
