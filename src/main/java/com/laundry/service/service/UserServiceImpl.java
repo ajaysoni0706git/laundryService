@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.laundry.service.dto.UserDTO;
 import com.laundry.service.model.Address;
 import com.laundry.service.model.User;
 import com.laundry.service.repository.UserRepo;
@@ -29,24 +30,13 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	@Autowired
 	private UserRepo repo;
 	
+	
+	
 	@Override
 	public User saveUser(User user) {
 	    if (repo.existsByEmail(user.getEmail())) {
 	        throw new RuntimeException("Email already exists");
 	    }
-
-	/*    List<Address> addresses = user.getAddress();
-	    if (addresses == null || addresses.isEmpty()) {
-	        throw new RuntimeException("At least one address must be provided");
-	    }
-
-	    for (Address addr : addresses) {
-	        if (addr.getLatitude() == null || addr.getLongitude() == null) {
-	            throw new RuntimeException("Latitude and Longitude must be provided for each address");
-	        }
-
-	        addAddress(addr, user);
-	    }*/
 	    
 	if (user.getAddress() == null || user.getAddress().isEmpty()) {
 		throw new RuntimeException("At least one address must be provided");
@@ -55,6 +45,9 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 		Address addr = user.getAddress().get(0);
 		
 		addAddress(addr, user);
+		
+		
+		
 	}
 
 	    String password = user.getPassword();
@@ -73,6 +66,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	}
 
 	private void addAddress(Address addr, User user) {
+		System.out.println(addr);
 	    Boolean isDefault = addr.getIs_default();
 	    if (Boolean.TRUE.equals(isDefault)) {
 	        // Set all other addresses to false except the current one
@@ -86,6 +80,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	    }
 
 	    addr.setUser(user);
+	    
 	}
 
 
@@ -104,8 +99,14 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 
 	@Override
 	public Optional<User> findByEmail(String email) {
-		Optional<User> user = repo.findByEmail(email);
-		return user;
+		Optional<User> userOpt = repo.findByEmail(email);
+		return userOpt;
+	}
+	
+	@Override
+	public Optional<User> findById(int id) {
+		Optional<User> userOpt = repo.findById(id);
+		return userOpt;
 	}
 	
 	
@@ -137,7 +138,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	        }
 
 	        // Use fixed filename
-	        String filename = "profile" + extension;
+	        String filename = userId + "profile_pic" + extension;
 	        Path filePath = uploadPath.resolve(filename);
 
 	        // Overwrite if file exists
@@ -147,11 +148,44 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	        user.setProfileImagePath(folderPath + filename);
 	        repo.save(user);
 
-	        return "Profile image uploaded successfully!";
+	        return user.getProfileImagePath();
 	        
 	    } catch (IOException e) {
 	        throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
 	    }
+	}
+
+	@Override
+	public User updateUser(int id, UserDTO dto) {
+        User user = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+		if (dto.getFirst_name() != null) {
+			user.setFirst_name(dto.getFirst_name());
+		}
+		if (dto.getLast_name() != null) {
+			user.setLast_name(dto.getLast_name());
+		}
+		if (dto.getPassword() != null) {
+			String encodedPassword = passwordEncoder.encode(dto.getPassword());
+			user.setPassword(encodedPassword);
+		}
+		if (dto.getPhone() != null) {
+			user.setPhone(dto.getPhone());
+		}
+		if (dto.getRole() != null) {
+			user.setRole(dto.getRole());
+		}
+		if (dto.getProfileImagePath() != null) {
+			user.setProfileImagePath(dto.getProfileImagePath());
+		}
+		if (dto.getIs_vendor() != null && dto.getIs_vendor() && dto.getRole().equalsIgnoreCase("VENDOR")) {
+			user.setIs_vendor(dto.getIs_vendor());
+		}
+		
+		user.setUpdated_date(java.time.LocalDateTime.now());
+		
+		return repo.save(user);
 	}
 
 }

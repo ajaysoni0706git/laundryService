@@ -11,6 +11,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.laundry.service.config.JwtUtil;
+import com.laundry.service.dto.AddressDTO;
 import com.laundry.service.dto.AuthRequest;
 import com.laundry.service.dto.ImageUploadDTO;
+import com.laundry.service.dto.UserDTO;
 import com.laundry.service.model.User;
+import com.laundry.service.service.IAddress;
 import com.laundry.service.service.IUserService;
 
 import jakarta.validation.Valid;
@@ -38,6 +42,9 @@ public class HomeController {
 
 	@Autowired
 	private AuthenticationManager authManager;
+	
+	@Autowired
+	private IAddress addressService;
 	
 	@PostMapping("/register")
 	public ResponseEntity<?> saveUser(@Valid @RequestBody User user) {
@@ -96,4 +103,92 @@ public class HomeController {
 		return ResponseEntity.ok(dto);
 	}
 	
+	@GetMapping("/getUserData")
+	public ResponseEntity<?> getUserImage(@RequestHeader("Authorization") String authHeader) {
+
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+		}
+
+		String token = authHeader.substring(7); // Remove the Bearer
+		if (!jwtUtil.isTokenValid(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+		}
+
+		String userId = jwtUtil.extractClaim(token, "user_id");
+
+		int user_id = Integer.parseInt(userId);
+		Optional<User> userOpt = userService.findById(user_id);
+
+		if (userOpt.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+		}
+
+		User user = userOpt.get();
+
+		return ResponseEntity.ok(user);
+	}
+	
+	@PutMapping("/updateUser")
+	public ResponseEntity<?> updateUser(@RequestBody UserDTO dto, @RequestHeader("Authorization") String authHeader) {
+
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+		}
+
+		String token = authHeader.substring(7); // Remove the Bearer
+		if (!jwtUtil.isTokenValid(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+		}
+
+		String userId = jwtUtil.extractClaim(token, "user_id");
+
+		int id = Integer.parseInt(userId);
+		
+		User updatedUser = userService.updateUser(id, dto);
+		
+		return ResponseEntity.ok(updatedUser);
+	}
+	
+	@PostMapping("/addAddress")
+	public ResponseEntity<?> addAddress(@RequestHeader("Authorization") String authHeader, @RequestBody AddressDTO dto){
+		System.out.println("id: " + dto.getAddress_id());
+		if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+		}
+		
+		String token = authHeader.substring(7);
+		
+		if(!jwtUtil.isTokenValid(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+		}
+		
+		String userId = jwtUtil.extractClaim(token, "user_id");
+		int user_id = Integer.parseInt(userId);
+		
+		String result = addressService.saveUpdateAddress(user_id, dto);
+		
+		return ResponseEntity.ok(result);
+	}
+	
+	@PutMapping("/updateAddress")
+	public ResponseEntity<?> updateAddress(@RequestHeader("Authorization") String authHeader, @RequestBody AddressDTO dto){
+		
+		if(authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+		}
+		
+		String token = authHeader.substring(7);
+		
+		if(!jwtUtil.isTokenValid(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+		}
+		
+		String userId = jwtUtil.extractClaim(token, "user_id");
+		int user_id = Integer.parseInt(userId);
+		
+		String result = addressService.saveUpdateAddress(user_id, dto);
+		
+		return ResponseEntity.ok(result);
+	}
 }

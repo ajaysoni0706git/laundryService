@@ -180,10 +180,10 @@ public class User {
 		return address;
 	}
 
-	public void setAddresses(List<Address> address) {
+	public void setAddress(List<Address> address) {
 		this.address = address;
 	}
-
+	
 	public String getProfileImagePath() {
 		return profileImagePath;
 	}
@@ -192,9 +192,6 @@ public class User {
 		this.profileImagePath = profileImagePath;
 	}
 
-	public void setAddress(List<Address> address) {
-		this.address = address;
-	}
 
 	
 	
