@@ -40,7 +40,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/laundry/login", "/laundry/register", "/laundry/home").permitAll()
+                .requestMatchers("/laundry/user/login", "/laundry/user/register", "/laundry/user/home").permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/vendor/**").hasRole("VENDOR")
+                .requestMatchers("/customer/**").hasRole("CUSTOMER")
                 .anyRequest().authenticated()
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

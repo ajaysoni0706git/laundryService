@@ -44,10 +44,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	}else {
 		Address addr = user.getAddress().get(0);
 		
-		addAddress(addr, user);
-		
-		
-		
+		addAddress(addr, user);	
 	}
 
 	    String password = user.getPassword();
@@ -67,13 +64,13 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 
 	private void addAddress(Address addr, User user) {
 		System.out.println(addr);
-	    Boolean isDefault = addr.getIs_default();
+	    Boolean isDefault = addr.getIsDefault();
 	    if (Boolean.TRUE.equals(isDefault)) {
 	        // Set all other addresses to false except the current one
 	        if (user.getAddress() != null) {
 	            for (Address a : user.getAddress()) {
 	                if (a != addr) {
-	                    a.setIs_default(false);
+	                    a.setIsDefault(false);
 	                }
 	            }
 	        }
@@ -89,11 +86,21 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 
         User user = repo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-
+        
+    /*    Set<GrantedAuthority> authorities = new HashSet<>();
+        String role = user.getRole();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()));
+        
+        return new org.springframework.security.core.userdetails.User(
+        		email,
+        		user.getPassword(),
+				authorities
+				);*/
+        
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRole())
+                .roles(user.getRole().toUpperCase())
                 .build();
     }
 
@@ -121,7 +128,7 @@ public class UserServiceImpl implements IUserService, UserDetailsService {
 	                .orElseThrow(() -> new RuntimeException("User not found"));
 	    	
 	        // Create user-specific path
-	        String folderPath = uploadDir  + userId + "/profile_image/";
+	        String folderPath = uploadDir  + "user_" + userId + "/profile_image/";
 	        Path uploadPath = Paths.get(folderPath);
 
 	        // Create directory if it doesn't exist

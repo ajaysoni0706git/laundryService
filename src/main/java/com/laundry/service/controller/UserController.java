@@ -31,8 +31,8 @@ import com.laundry.service.service.IUserService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/laundry")
-public class HomeController {
+@RequestMapping("/laundry/user")
+public class UserController {
 
 	@Autowired
 	private IUserService userService;	
@@ -152,7 +152,6 @@ public class HomeController {
 	
 	@PostMapping("/addAddress")
 	public ResponseEntity<?> addAddress(@RequestHeader("Authorization") String authHeader, @RequestBody AddressDTO dto){
-		System.out.println("id: " + dto.getAddress_id());
 		if(authHeader == null || !authHeader.startsWith("Bearer ")) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
 		}
@@ -191,4 +190,25 @@ public class HomeController {
 		
 		return ResponseEntity.ok(result);
 	}
+
+	@GetMapping("/getDefaultAddress")
+	public ResponseEntity<?> getDefaultAddress(@RequestHeader("Authorization") String authHeader){
+		
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing or invalid token");
+		}
+		
+		String token = authHeader.substring(7); // Remove the Bearer
+		if (!jwtUtil.isTokenValid(token)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+		}
+		String userId = jwtUtil.extractClaim(token, "user_id");
+		int user_id = Integer.parseInt(userId);
+		
+		Optional<AddressDTO> addressOpt = addressService.getDefaultAddress(user_id);
+		
+		return ResponseEntity.ok(addressOpt);
+	}
+	
+	
 }

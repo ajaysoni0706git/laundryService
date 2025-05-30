@@ -1,5 +1,7 @@
 package com.laundry.service.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -53,17 +55,43 @@ public class AddressImpl implements IAddress {
 	        if (user.getAddress() != null) {
 	            for (Address other : user.getAddress()) {
 	                if (!other.equals(address)) {
-	                    other.setIs_default(false);
+	                    other.setIsDefault(false);
 	                    repo.save(other);
 	                }
 	            }
 	        }
-	        address.setIs_default(true);
+	        address.setIsDefault(true);
 	    }
 
 	    repo.save(address);
 	    return dto.getAddress_id() != null ? "Address updated successfully!" : "Address added successfully!";
 	}
 
+	@Override
+	public Optional<AddressDTO> getDefaultAddress(int user_id) {
+		
+		Optional<Address> addressOpt = repo.findByUser_IdAndIsDefault((long) user_id, true);
+		
+		if (addressOpt.isEmpty()) {
+			return Optional.empty(); // No default address found
+		}
+		
+	    Address address = addressOpt.get();
 
+	    AddressDTO dto = new AddressDTO();
+	    dto.setAddress_id(address.getAddress_id());
+	    dto.setStreet(address.getStreet());
+	    dto.setCity(address.getCity());
+	    dto.setState(address.getState());
+	    dto.setPostalCode(address.getPostalCode());
+	    dto.setCountry(address.getCountry());
+	    dto.setLatitude(address.getLatitude());
+	    dto.setLongitude(address.getLongitude());
+	    dto.setIs_default(address.getIsDefault());
+
+	    return Optional.of(dto);
+	    
+	  /*  Optional<AddressDTO> dtoOpt = Optional.of(new AddressDTO());*/
+	}
+	
 }

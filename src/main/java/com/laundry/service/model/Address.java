@@ -36,7 +36,7 @@ public class Address {
     private Double longitude;
 
     @Column(name = "is_default")
-    private Boolean is_default;
+    private Boolean isDefault;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -108,12 +108,12 @@ public class Address {
 		this.longitude = longitude;
 	}
 
-	public Boolean getIs_default() {
-		return is_default;
+	public Boolean getIsDefault() {
+		return isDefault;
 	}
 
-	public void setIs_default(Boolean is_default) {
-		this.is_default = is_default;
+	public void setIsDefault(Boolean isDefault) {
+		this.isDefault = isDefault;
 	}
 
 	public User getUser() {
